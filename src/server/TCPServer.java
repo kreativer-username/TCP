@@ -1,66 +1,84 @@
 package server;
 
-import java.io.*;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class TCPServer {
 
+    private final int serverPort = 1234;
+    private ServerSocket server;
+    private Socket client;
+    private InputStream is;
+    private OutputStream os;
+
     public static void main(String[] args) {
-        String filename = "test.txt";
-        String output = "test";
-        write(output, filename);
-        String fileData = read(filename);
-        System.out.println("read: " + fileData + ", wrote: " + output);
+        TCPServer tcpServer = new TCPServer();
+        String input = tcpServer.read(1);
+        System.out.println("read: " + input);
+        tcpServer.write("hello, client!");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {}
+
     }
 
-    /**
-     * Schreibt die angegebene Nachricht in die bereits existierende Datei unter dem Dateipfad
-     * @param message Nachricht, die in die Datei geschrieben werden soll
-     * @param filename Path der Datei
-     * @return true, wenn das Hineinschreiben erfolgreich war, false, wenn die Datei nicht geöffnet oder nicht hineingeschrieben werden konnte
-     */
-    public static boolean write(String message, String filename) {
-        OutputStream os;
+    public TCPServer() {
         try {
-            os = new FileOutputStream(filename);
-        } catch (FileNotFoundException e) {
-            System.err.println("Couldn't open file!");
-            return false;
+            server = new ServerSocket(serverPort);
+            run();
+        } catch (IOException e) {
+            System.err.println("Couldn't create server!");
+            return;
         }
+    }
 
+    private void run() throws IOException {
+        client = server.accept();
+        is = client.getInputStream();
+        os = client.getOutputStream();
+    }
+
+    public void write(String message) {
         try {
             os.write(message.getBytes());
         } catch (IOException e) {
-            System.err.println("Couldn't write in file!");
-            return false;
+            System.err.println("Couldn't write to client!");
         }
-        System.out.println("Successfully wrote in file " + filename);
-        return true;
     }
 
-    /**
-     * Liesst den Dateiinhalt der angegebenen Datei aus und gibt diesen zurück
-     * @param filename Path der Datei
-     * @return Dateiinhalt
-     */
-    public static String read(String filename) {
+    public String read() {
         String input;
         byte[] buffer = new byte[100];
-        InputStream is;
-        try {
-            is = new FileInputStream(filename);
-        } catch (FileNotFoundException e) {
-            System.err.println("Couldn't open file!");
-            return null;
-        }
-
         try {
             is.read(buffer);
         } catch (IOException e) {
-            System.err.println("Couldn't read from file!");
+            System.err.println("Couln't read from InputStream!");
             return null;
         }
-        input = new String(buffer);
 
+        input = new String(buffer);
         return input;
+    }
+
+    public String read(int length) {
+        String input;
+        byte[] buffer = new byte[length];
+        try {
+            is.read(buffer);
+        } catch (IOException e) {
+            System.err.println("Couln't read from InputStream!");
+            return null;
+        }
+
+        input = new String(buffer);
+        return input;
+    }
+
+    public int getServerPort() {
+        return serverPort;
     }
 }
