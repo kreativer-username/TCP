@@ -18,7 +18,7 @@ public class TCPServer {
     public static void main(String[] args) {
         TCPServer tcpServer = new TCPServer();
         String input = tcpServer.read(1);
-        System.out.println("read: " + input);
+        System.out.println("read (S): " + input);
         tcpServer.write("hello, client!");
         try {
             Thread.sleep(5000);
@@ -37,7 +37,9 @@ public class TCPServer {
     }
 
     private void run() throws IOException {
+        System.out.println("waiting for client...");
         client = server.accept();
+        System.out.println("Client is connected!");
         is = client.getInputStream();
         os = client.getOutputStream();
     }
