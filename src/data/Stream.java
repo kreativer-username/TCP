@@ -1,3 +1,5 @@
+package data;
+
 import java.io.*;
 
 /**
@@ -11,13 +13,15 @@ public class Stream {
      * @param filename Path der Datei
      * @return true, wenn das Hineinschreiben erfolgreich war, false, wenn die Datei nicht geöffnet oder nicht hineingeschrieben werden konnte
      */
-    public static boolean write(String message, String filename) {
+    public static boolean write(String message, String filename) throws IOException {
         OutputStream os;
         try {
             os = new FileOutputStream(filename);
         } catch (FileNotFoundException e) {
-            System.err.println("Couldn't open file!");
-            return false;
+            File file = new File(filename);
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+            os = new FileOutputStream(filename);
         }
 
         try {

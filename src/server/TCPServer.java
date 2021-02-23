@@ -1,6 +1,8 @@
 package server;
 
 
+import data.Stream;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,9 +17,9 @@ public class TCPServer {
     private InputStream is;
     private OutputStream os;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         TCPServer tcpServer = new TCPServer();
-        String input = tcpServer.read(1);
+        String input = tcpServer.read();
         System.out.println("read (S): " + input);
         tcpServer.write("hello, client!");
         try {
@@ -52,7 +54,7 @@ public class TCPServer {
         }
     }
 
-    public String read() {
+    public String read() throws IOException {
         String input;
         byte[] buffer = new byte[100];
         try {
@@ -63,7 +65,33 @@ public class TCPServer {
         }
 
         input = new String(buffer);
+        if (input.charAt(0) == '@') {
+            String[] arguments = input.split(" ");
+            System.out.println("found an argument...");
+            System.out.println("Arguments[0]=" + arguments[0] + " Argumentlength: " + arguments.length);
+            switch (arguments[0]) {
+                case "@FILE":
+                    if (arguments.length == 3) {
+                        saveFile(arguments[1], arguments[2]);
+                        break;
+                    } else {
+                        throw new IOException("Wrong arguments!");
+                    }
+            }
+        }
         return input;
+    }
+
+    private boolean saveFile(String filename, String data) {
+        System.out.println("Trying to save the file...");
+        boolean savingState = false;
+        try {
+            savingState = Stream.write(data, "../out/" + filename);
+            write("@SAVED");
+        } catch (IOException e) {
+            System.err.println("Couldn't save file!");
+        }
+        return savingState;
     }
 
     public String read(int length) {

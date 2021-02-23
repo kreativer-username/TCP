@@ -1,10 +1,8 @@
 package client;
 
-import server.TCPServer;
+import data.Stream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 public class TCPClient {
@@ -17,7 +15,7 @@ public class TCPClient {
         TCPClient client = new TCPClient();
 
         if (client.connect("localhost", 1234)) {
-            client.send("Hallo");
+            client.sendFile("test.txt");
             String line = client.read();
             System.out.println("read (C): " + line);
         }
@@ -46,13 +44,45 @@ public class TCPClient {
         }
     }
 
+    public void sendFile(String filepath) {
+        String[] temp = filepath.split("/");
+        String fileName = temp[temp.length - 1];
+        String file = Stream.read(filepath);
+
+        send("@FILE " + fileName + " " + file);
+        System.out.println("filename: " + fileName);
+        System.out.println("data: "+ file);
+    }
+
+    public static String read(String filename) {
+        String input;
+        byte[] buffer = new byte[100];
+        InputStream is;
+        try {
+            is = new FileInputStream(filename);
+        } catch (FileNotFoundException e) {
+            System.err.println("Couldn't open file!");
+            return null;
+        }
+
+        try {
+            is.read(buffer);
+        } catch (IOException e) {
+            System.err.println("Couldn't read from file!");
+            return null;
+        }
+        input = new String(buffer);
+
+        return input;
+    }
+
     public String read() {
         String input;
         byte[] buffer = new byte[100];
         try {
             is.read(buffer);
         } catch (IOException e) {
-            System.err.println("Couln't read from InputStream!");
+            System.err.println("Couldn't read from InputStream!");
             return null;
         }
 
@@ -66,7 +96,7 @@ public class TCPClient {
         try {
             is.read(buffer);
         } catch (IOException e) {
-            System.err.println("Couln't read from InputStream!");
+            System.err.println("Couldn't read from InputStream!");
             return null;
         }
 
