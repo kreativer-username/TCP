@@ -1,6 +1,7 @@
 package server;
 
 
+import data.Sensor;
 import data.Stream;
 
 import java.io.IOException;
@@ -73,13 +74,23 @@ public class TCPServer {
                 case "@FILE":
                     if (arguments.length == 3) {
                         saveFile(arguments[1], arguments[2]);
-                        break;
+                    } else {
+                        throw new IOException("Wrong arguments!");
+                    }
+                    break;
+                case "@DATA":
+                    if (arguments.length == 4) {
+                        readSensorData(arguments[1], Long.parseLong(arguments[2]), Float.parseFloat(arguments[3]));
                     } else {
                         throw new IOException("Wrong arguments!");
                     }
             }
         }
         return input;
+    }
+
+    private Sensor readSensorData(String name, long timestamp, float value) {
+        return new Sensor(name, timestamp, value);
     }
 
     private boolean saveFile(String filename, String data) {

@@ -1,5 +1,6 @@
 package client;
 
+import data.Sensor;
 import data.Stream;
 
 import java.io.*;
@@ -15,7 +16,8 @@ public class TCPClient {
         TCPClient client = new TCPClient();
 
         if (client.connect("localhost", 1234)) {
-            client.sendFile("test.txt");
+            Sensor sensorData = new Sensor("test", 123);
+            client.sendSensorData(sensorData);
             String line = client.read();
             System.out.println("read (C): " + line);
         }
@@ -54,6 +56,10 @@ public class TCPClient {
         System.out.println("data: "+ file);
     }
 
+    public void sendSensorData(Sensor data) {
+        send("@DATA " + data.getName() + " " + data.getTimestamp() + " " + data.getValue());
+    }
+
     public static String read(String filename) {
         String input;
         byte[] buffer = new byte[100];
@@ -87,7 +93,19 @@ public class TCPClient {
         }
 
         input = new String(buffer);
+
+        if (input.charAt(0) == '@') {
+            String[] inputSplitted = input.split(" ");
+            if (inputSplitted[0].equals("@DATA") && inputSplitted.length == 4) {
+                Sensor data = readSensorData(inputSplitted[1], Long.parseLong(inputSplitted[2]), Float.parseFloat(inputSplitted[3]));
+                input = "Read sensor data: " + data;
+            }
+        }
         return input;
+    }
+
+    private Sensor readSensorData(String name, long timestamp, float value) {
+        return new Sensor(name, timestamp, value);
     }
 
     public String read(int length) {
